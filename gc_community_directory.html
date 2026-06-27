@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find Your People — Gravel Crossing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@900&family=Bitter:ital,wght@1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --clay:    #C25A2C;
+      --asphalt: #2D2926;
+      --bone:    #E8DFD3;
+      --trail:   #9A8E84;
+      --stone:   #6B6862;
+      --gravel:  #B8AFA6;
+      --moss:    #3D5233;
+      --bg:      #F4EFE9;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--asphalt);
+      min-height: 100vh;
+    }
+
+    /* ── Site nav ── */
+    .site-nav {
+      background: var(--asphalt);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .site-nav a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gravel);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .site-nav a:hover { color: var(--bone); }
+    .site-nav .logo-wrap img {
+      height: 32px;
+      width: auto;
+      display: block;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--asphalt);
+      padding: 2rem 1.5rem 1.75rem;
+      border-bottom: 3px solid var(--clay);
+    }
+    header .header-inner {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    header .header-logo {
+      flex-shrink: 0;
+      padding-top: 0.25rem;
+    }
+    header .header-logo img {
+      height: 56px;
+      width: auto;
+      display: block;
+      opacity: 0.92;
+    }
+    header .header-text { flex: 1; }
+    header .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gravel);
+      margin-bottom: 0.4rem;
+    }
+    header h1 {
+      font-family: 'Roboto Slab', serif;
+      font-weight: 900;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      color: var(--bone);
+      line-height: 1.1;
+    }
+    header h1 span { color: var(--clay); }
+    header p {
+      font-family: 'Bitter', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--gravel);
+      margin-top: 0.5rem;
+      max-width: 580px;
+    }
+    header .coords {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--stone);
+      margin-top: 1rem;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    /* ── Events section ── */
+    .events-section {
+      margin-bottom: 3rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--gravel);
+    }
+    .events-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .events-header h2 {
+      font-family: 'Roboto Slab', serif;
+      font-weight: 900;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--asphalt);
+    }
+    .events-header .updated-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--stone);
+      letter-spacing: 0.06em;
+    }
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .event-card {
+      background: #fff;
+      border: 1.5px solid var(--gravel);
+      border-left: 4px solid var(--clay);
+      padding: 1rem 1.1rem;
+      position: relative;
+    }
+    .event-card.gc-event {
+      background: var(--asphalt);
+      border-color: var(--asphalt);
+      border-left-color: var(--clay);
+    }
+    .event-card.gc-event .event-title { color: var(--bone); }
+    .event-card.gc-event .event-detail { color: var(--gravel); }
+    .event-card.gc-event .event-date-tag { color: var(--clay); }
+    .event-card.gc-event .event-host { color: var(--stone); }
+    .event-date-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--clay);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+    .event-title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--asphalt);
+      margin-bottom: 0.4rem;
+      line-height: 1.3;
+    }
+    .event-detail {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.67rem;
+      color: var(--stone);
+      letter-spacing: 0.04em;
+      line-height: 1.7;
+    }
+    .event-host {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.72rem;
+      color: var(--trail);
+      margin-top: 0.6rem;
+    }
+    .event-link {
+      display: inline-block;
+      margin-top: 0.6rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--clay);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .event-link:hover { text-decoration: underline; }
+    .events-empty {
+      font-family: 'Bitter', serif;
+      font-style: italic;
+      color: var(--stone);
+      font-size: 0.9rem;
+    }
+    .events-cta {
+      margin-top: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--stone);
+      letter-spacing: 0.06em;
+    }
+    .events-cta a { color: var(--clay); text-decoration: none; }
+    .events-cta a:hover { text-decoration: underline; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2.5rem;
+      align-items: center;
+    }
+    .filter-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--stone);
+      margin-right: 0.25rem;
+    }
+    .filter-btn {
+      background: transparent;
+      border: 1.5px solid var(--gravel);
+      color: var(--stone);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.35rem 0.85rem;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .filter-btn:hover {
+      border-color: var(--clay);
+      color: var(--clay);
+    }
+    .filter-btn.active {
+      background: var(--clay);
+      border-color: var(--clay);
+      color: var(--bone);
+    }
+
+    /* ── Section headers ── */
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      margin-top: 2.5rem;
+    }
+    .section-head:first-of-type { margin-top: 0; }
+    .section-head h2 {
+      font-family: 'Roboto Slab', serif;
+      font-weight: 900;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--stone);
+      white-space: nowrap;
+    }
+    .section-head .rule {
+      flex: 1;
+      height: 1px;
+      background: var(--gravel);
+    }
+
+    /* ── Cards grid ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e4ddd5;
+      border-top: 3px solid var(--gravel);
+      padding: 1.25rem 1.25rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: border-top-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card:hover {
+      border-top-color: var(--clay);
+      box-shadow: 0 2px 12px rgba(194,90,44,0.08);
+    }
+    .card.hidden { display: none; }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.15rem 0.45rem;
+      border-radius: 2px;
+    }
+    .tag-run      { background: #fdeee6; color: var(--clay); }
+    .tag-bike     { background: #e8f0e9; color: var(--moss); }
+    .tag-trail    { background: #ede9e4; color: var(--stone); }
+    .tag-multi    { background: #e6ecf5; color: #3a5a8a; }
+    .tag-swim     { background: #e6f3f5; color: #2a7a8a; }
+    .tag-strength { background: #f5ede6; color: #8a4a2a; }
+    .tag-wellness { background: #edf0e8; color: var(--moss); }
+    .tag-social   { background: #f0ece6; color: var(--stone); }
+    .tag-youth    { background: #f5f0e6; color: #7a6a3a; }
+    .tag-gc       { background: var(--clay); color: var(--bone); }
+
+    .card h3 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.97rem;
+      color: var(--asphalt);
+      line-height: 1.3;
+    }
+    .card p {
+      font-size: 0.82rem;
+      color: var(--stone);
+      line-height: 1.55;
+      flex: 1;
+    }
+    .card a {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--clay);
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      margin-top: 0.25rem;
+      display: inline-block;
+    }
+    .card a:hover { text-decoration: underline; }
+    .card .location {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--gravel);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── GC-featured card variant ── */
+    .card.gc-card {
+      border-top-color: var(--clay);
+      background: #fdf8f4;
+    }
+
+    /* ── Races section ── */
+    .races-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .race-card {
+      background: var(--asphalt);
+      border-left: 3px solid var(--clay);
+      padding: 1.1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .race-card h3 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--bone);
+    }
+    .race-card p {
+      font-size: 0.82rem;
+      color: var(--gravel);
+      line-height: 1.5;
+    }
+    .race-card a {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--clay);
+      text-decoration: none;
+      margin-top: 0.25rem;
+    }
+    .race-card a:hover { text-decoration: underline; }
+
+    /* ── Footer CTA ── */
+    .cta {
+      margin-top: 3.5rem;
+      padding: 2rem 1.75rem;
+      background: var(--asphalt);
+      border-top: 3px solid var(--clay);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .cta p {
+      font-family: 'Bitter', serif;
+      font-style: italic;
+      color: var(--gravel);
+      font-size: 0.95rem;
+      max-width: 520px;
+    }
+    .cta a {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--bone);
+      background: var(--clay);
+      padding: 0.6rem 1.4rem;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .cta a:hover { background: #a84e26; }
+
+    /* ── Empty state ── */
+    .empty {
+      display: none;
+      grid-column: 1 / -1;
+      font-size: 0.88rem;
+      color: var(--stone);
+      padding: 2rem 0;
+      font-style: italic;
+    }
+
+    @media (max-width: 600px) {
+      .cards, .races-grid { grid-template-columns: 1fr; }
+      .filter-bar { gap: 0.35rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="/" class="logo-wrap" aria-label="Gravel Crossing home">
+    <!-- White logo: use Logo_Logo_White.png in production at /assets/logos/logo-white.png -->
+    <!-- Local dev: ../_brand/Logo_Logo_White.png -->
+    <img src="/assets/logos/logo-white.png" alt="Gravel Crossing" onerror="this.style.display='none';this.nextElementSibling.style.display='block';" />
+    <span style="display:none;font-family:'Roboto Slab',serif;font-weight:900;color:var(--bone);font-size:1rem;letter-spacing:0.02em;">GC</span>
+  </a>
+  <div style="display:flex;gap:1.5rem;align-items:center;">
+    <a href="/">Home</a>
+    <a href="/run-with-us">Run With Us</a>
+    <a href="/find-your-people" style="color:var(--clay);">Community</a>
+  </div>
+</nav>
+
+<header>
+  <div class="header-inner">
+    <div class="header-text">
+      <p class="eyebrow">Gravel Crossing · Great Western Corridor · South Metro</p>
+      <h1>Find Your <span>People.</span></h1>
+      <p>Run clubs, cycling groups, tri communities, and training resources across the south metro corridor. Not a competitor to any of them — a map to all of them.</p>
+      <div class="coords">N 41.2667° · W 93.7833° · Cumming, IA · GWT Trailhead G14 · 3.5 mi to Norwalk</div>
+    </div>
+    <div class="header-logo">
+      <!-- Color logo on dark header -->
+      <img src="/assets/logos/logo-color.png" alt="Gravel Crossing"
+           onerror="this.src='/assets/logos/logo-white.png'" />
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── Upcoming Events ── -->
+  <section class="events-section" id="events">
+    <div class="events-header">
+      <h2>Upcoming Events</h2>
+      <span class="updated-tag" id="events-updated-tag"></span>
+    </div>
+    <div class="events-grid" id="events-grid">
+      <p class="events-empty">Loading events…</p>
+    </div>
+    <p class="events-cta">
+      Running something in the south metro?
+      <a href="mailto:gravelcrossing@gmail.com">Submit your event →</a>
+    </p>
+  </section>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="run">Run</button>
+    <button class="filter-btn" data-filter="bike">Bike</button>
+    <button class="filter-btn" data-filter="swim">Swim</button>
+    <button class="filter-btn" data-filter="multi">Multi / Tri</button>
+    <button class="filter-btn" data-filter="strength">Strength</button>
+    <button class="filter-btn" data-filter="wellness">Wellness</button>
+    <button class="filter-btn" data-filter="social">Social</button>
+  </div>
+
+  <!-- ── RUN ── -->
+  <div class="section-head">
+    <h2>Run</h2>
+    <div class="rule"></div>
+  </div>
+  <div class="cards" id="run-grid">
+
+    <div class="card gc-card" data-tags="run social">
+      <div class="card-tags">
+        <span class="tag tag-gc">GC Home Base</span>
+        <span class="tag tag-run">Run</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>Gravel Crossing Saturday Runs</h3>
+      <p>7:00 AM. G14 &amp; 25th Ave trailhead, Cumming. Easy pace, dirt loop, all welcome. The thing this whole directory points back to.</p>
+      <span class="location">G14 Trailhead · Cumming, IA · Saturdays</span>
+      <a href="https://gravelcrossing.com" target="_blank" rel="noopener">gravelcrossing.com →</a>
+    </div>
+
+    <div class="card" data-tags="run social trail">
+      <div class="card-tags">
+        <span class="tag tag-run">Run</span>
+        <span class="tag tag-social">Social</span>
+        <span class="tag tag-trail">Trail</span>
+      </div>
+      <h3>Capital Striders</h3>
+      <p>The anchor of Central Iowa running since the mid-1980s. Saturday morning group runs, Wednesday track at Roosevelt, trail series, and a full regional race calendar — Loop the Lake, Sycamore 8, and more.</p>
+      <span class="location">Des Moines metro · All paces</span>
+      <a href="https://www.capitalstriders.org" target="_blank" rel="noopener">capitalstriders.org →</a>
+    </div>
+
+    <div class="card" data-tags="run social">
+      <div class="card-tags">
+        <span class="tag tag-run">Run</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>Fleet Feet Run Club</h3>
+      <p>Free twice-weekly group runs through the Des Moines trail system. Inclusive pace range, post-run at SingleSpeed Brewing. Retail-as-community done right.</p>
+      <span class="location">Des Moines, IA · Tue + Thu</span>
+      <a href="https://www.fleetfeet.com/s/desmoines/runclub" target="_blank" rel="noopener">fleetfeet.com/desmoines →</a>
+    </div>
+
+    <div class="card" data-tags="run social">
+      <div class="card-tags">
+        <span class="tag tag-run">Run</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>Fitness Sports Group Runs</h3>
+      <p>Weekly group training runs out of Fitness Sports in Des Moines. Rotating routes, multiple pace groups, open to all.</p>
+      <span class="location">Des Moines, IA</span>
+      <a href="https://fitnesssports.com/group-runs-in-des-moines/" target="_blank" rel="noopener">fitnesssports.com →</a>
+    </div>
+
+    <div class="card" data-tags="run social">
+      <div class="card-tags">
+        <span class="tag tag-run">Run</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>Norwalk Run Club</h3>
+      <p>12-session program run by Speed &amp; Performance Academy and Imara PT. 6 weeks, structured training, season finale 5K + 1-mile fun run. Built for beginners who want a defined finish line.</p>
+      <span class="location">Norwalk, IA · Seasonal</span>
+      <a href="https://norwalkrunclub.org" target="_blank" rel="noopener">norwalkrunclub.org →</a>
+    </div>
+
+    <div class="card" data-tags="run strength youth">
+      <div class="card-tags">
+        <span class="tag tag-run">Run</span>
+        <span class="tag tag-strength">Strength</span>
+        <span class="tag tag-youth">Youth</span>
+      </div>
+      <h3>Tempo Run Club — D1 Training</h3>
+      <p>Science-based elite track and field development. 270+ medals at Iowa State Championships since 2022. For athletes who run with a championship mindset.</p>
+      <span class="location">Waukee, IA</span>
+      <a href="https://d1training.com/facility/des-moines/d1-tempo-run-club" target="_blank" rel="noopener">d1training.com →</a>
+    </div>
+
+    <div class="card" data-tags="run strength youth">
+      <div class="card-tags">
+        <span class="tag tag-run">Run</span>
+        <span class="tag tag-strength">Strength</span>
+        <span class="tag tag-youth">Youth</span>
+      </div>
+      <h3>DASH Track &amp; Field — Norwalk Parks &amp; Rec</h3>
+      <p>Youth track and field program through Norwalk Parks and Recreation. Speed, agility, and competitive development for young athletes on the south metro corridor.</p>
+      <span class="location">Norwalk, IA</span>
+      <a href="https://www.norwalk.iowa.gov/departments/parks___recreation/programs___activities/dashsports.php" target="_blank" rel="noopener">norwalk.iowa.gov →</a>
+    </div>
+
+  </div>
+
+  <!-- ── BIKE ── -->
+  <div class="section-head">
+    <h2>Bike</h2>
+    <div class="rule"></div>
+  </div>
+  <div class="cards" id="bike-grid">
+
+    <div class="card" data-tags="bike social">
+      <div class="card-tags">
+        <span class="tag tag-bike">Bike</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>Major Taylor Iowa (MTIA)</h3>
+      <p>Named for the legendary Black cyclist Marshall "Major" Taylor. Signature Monday night rides, community leadership, and a model for what cycling-as-belonging looks like. Diverse, inclusive, worth knowing.</p>
+      <span class="location">Des Moines, IA · Mon nights</span>
+      <a href="https://www.bikeiowa.com/Events" target="_blank" rel="noopener">bikeiowa.com →</a>
+    </div>
+
+    <div class="card" data-tags="bike social">
+      <div class="card-tags">
+        <span class="tag tag-bike">Bike</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>Des Moines Cycle Club (DMCC)</h3>
+      <p>25+ years of road cycling advocacy and group rides across Central Iowa. Non-profit. All levels from youth to retirees. Weekly rides, annual events, and a culture that takes safety seriously.</p>
+      <span class="location">Des Moines, IA</span>
+      <a href="http://www.dmcycleclub.com" target="_blank" rel="noopener">dmcycleclub.com →</a>
+    </div>
+
+    <div class="card" data-tags="bike social trail">
+      <div class="card-tags">
+        <span class="tag tag-bike">Bike</span>
+        <span class="tag tag-social">Social</span>
+        <span class="tag tag-trail">GWT</span>
+      </div>
+      <h3>Monday Night No-Drop Road Ride</h3>
+      <p>The most iconic recurring ride on the Great Western Trailhead. 20 miles, ~17 mph conversational pace, regroup points, zero rider left behind. Leaves from Park Ave. Mentorship culture built in.</p>
+      <span class="location">GWT Park Ave Trailhead · Mon nights</span>
+      <a href="https://www.facebook.com/groups/MondayNightNoDropRideDSM/" target="_blank" rel="noopener">Facebook Group →</a>
+    </div>
+
+    <div class="card" data-tags="bike trail">
+      <div class="card-tags">
+        <span class="tag tag-bike">Bike</span>
+        <span class="tag tag-trail">MTB</span>
+      </div>
+      <h3>CITA Monday Night Dirt Rides</h3>
+      <p>No-drop mountain bike rides at Center Trails, run by the Central Iowa Trail Association. Skills-focused, trail-advocate culture. Essential for the multi-sport crowd who splits time between paved and dirt.</p>
+      <span class="location">Center Trails, IA · Mon nights</span>
+      <a href="http://www.centraliowatrails.com/monday-night-dirt-rides" target="_blank" rel="noopener">centraliowatrails.com →</a>
+    </div>
+
+    <div class="card" data-tags="bike social">
+      <div class="card-tags">
+        <span class="tag tag-bike">Bike</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>Street Collective of Des Moines</h3>
+      <p>Bike safety, community giveaways, and urban cycling infrastructure advocacy. "Transforming how Central Iowa moves." If you care about access and infrastructure, this is your people.</p>
+      <span class="location">Des Moines, IA</span>
+      <a href="https://dsmstreetcollective.org/" target="_blank" rel="noopener">dsmstreetcollective.org →</a>
+    </div>
+
+    <div class="card" data-tags="bike trail">
+      <div class="card-tags">
+        <span class="tag tag-bike">Bike</span>
+        <span class="tag tag-trail">Gravel</span>
+      </div>
+      <h3>Iowa Gravel Project</h3>
+      <p>Gravel cycling community across Iowa. Routes, events, and people who ride dirt. If the Great Western Trail is your warm-up, this is where the longer stuff lives.</p>
+      <span class="location">Central Iowa</span>
+      <a href="https://www.facebook.com/groups/1306679639477674" target="_blank" rel="noopener">Facebook Group →</a>
+    </div>
+
+    <div class="card" data-tags="bike social">
+      <div class="card-tags">
+        <span class="tag tag-bike">Bike</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>515 Brewing Group Rides</h3>
+      <p>Social cycling with a post-ride destination built in. Organized through DSM Group Rides, these are low-pressure, high-social rides that end somewhere worth being.</p>
+      <span class="location">Des Moines metro</span>
+      <a href="https://www.dsmgrouprides.com/" target="_blank" rel="noopener">dsmgrouprides.com →</a>
+    </div>
+
+    <div class="card" data-tags="bike trail">
+      <div class="card-tags">
+        <span class="tag tag-bike">Bike</span>
+        <span class="tag tag-trail">MTB</span>
+      </div>
+      <h3>shredHer Des Moines MTB</h3>
+      <p>Women's mountain biking community in Des Moines. Skills clinics, trail rides, and a community that makes single-track accessible. Strong entry point for women cyclists moving from road to dirt.</p>
+      <span class="location">Des Moines, IA</span>
+      <a href="https://www.facebook.com/61581641905824" target="_blank" rel="noopener">Facebook →</a>
+    </div>
+
+    <div class="card" data-tags="bike trail youth">
+      <div class="card-tags">
+        <span class="tag tag-bike">Bike</span>
+        <span class="tag tag-trail">MTB</span>
+        <span class="tag tag-youth">Youth</span>
+      </div>
+      <h3>Des Moines Wolfpack MTB</h3>
+      <p>Scholastic mountain bike club for youth riders in the Des Moines area. Trail skills, competition, and a next-generation cycling culture worth pointing parents toward.</p>
+      <span class="location">Des Moines, IA</span>
+      <a href="https://www.facebook.com/desmoinesscholasticmtbclub" target="_blank" rel="noopener">Facebook →</a>
+    </div>
+
+    <div class="card" data-tags="bike social">
+      <div class="card-tags">
+        <span class="tag tag-bike">Bike</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>Iowa Bicycle Coalition</h3>
+      <p>Statewide advocacy for cycling infrastructure, safety, and access. The policy and infrastructure layer that makes rides like the Great Western Corridor possible long-term.</p>
+      <span class="location">Iowa statewide</span>
+      <a href="https://iowabicyclecoalition.org/" target="_blank" rel="noopener">iowabicyclecoalition.org →</a>
+    </div>
+
+  </div>
+
+  <!-- ── SWIM + MULTI / TRI ── -->
+  <div class="section-head">
+    <h2>Swim &amp; Multi-Sport</h2>
+    <div class="rule"></div>
+  </div>
+  <div class="cards" id="multi-grid">
+
+    <div class="card" data-tags="multi swim run bike social">
+      <div class="card-tags">
+        <span class="tag tag-multi">Tri</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>Triathlon Racers of Iowa</h3>
+      <p>Founded 2005. Non-profit, all abilities — sprint novice to Ironman Kona qualifier. Winter and spring training in swimming and cycling. Runs the Ankeny Youth Tri. The south metro's original multisport community.</p>
+      <span class="location">Greater Des Moines</span>
+      <a href="https://triracers.com/" target="_blank" rel="noopener">triracers.com →</a>
+    </div>
+
+    <div class="card" data-tags="multi swim run bike social">
+      <div class="card-tags">
+        <span class="tag tag-multi">Tri</span>
+        <span class="tag tag-social">Social</span>
+      </div>
+      <h3>Des Moines Triathlon Club</h3>
+      <p>First triathlon to finishing a PR — DSM Tri Club's mission covers the full range. Structured group workouts and training programs. If you run and ride and want to add the swim, start here.</p>
+      <span class="location">Des Moines, IA</span>
+      <a href="https://dsmtriclub.com/" target="_blank" rel="noopener">dsmtriclub.com →</a>
+    </div>
+
+    <div class="card" data-tags="swim multi">
+      <div class="card-tags">
+        <span class="tag tag-swim">Swim</span>
+        <span class="tag tag-multi">Multi</span>
+      </div>
+      <h3>DSMY Marlins — YMCA</h3>
+      <p>Year-round competitive swimming for both youth and adults through the YMCA of Greater Des Moines. Coached technique and performance development. The pool backbone for any tri training in the metro.</p>
+      <span class="location">Des Moines metro</span>
+      <a href="https://www.dmymca.org/programs/swimming/competitive-swim" target="_blank" rel="noopener">dmymca.org →</a>
+    </div>
+
+    <div class="card" data-tags="swim multi strength">
+      <div class="card-tags">
+        <span class="tag tag-swim">Swim</span>
+        <span class="tag tag-multi">Multi</span>
+        <span class="tag tag-strength">Performance</span>
+      </div>
+      <h3>Life Time Masters Tri Swim</h3>
+      <p>Adult swim program built specifically for open-water and competitive tri performance. Coached sessions, structured progression. If the swim is the thing holding back your race day, this is the fix.</p>
+      <span class="location">Des Moines, IA</span>
+      <a href="https://www.lifetime.life/locations/ia/des-moines/pools/adult-swim.html" target="_blank" rel="noopener">lifetime.life →</a>
+    </div>
+
+    <div class="card" data-tags="multi run bike swim">
+      <div class="card-tags">
+        <span class="tag tag-multi">Tri</span>
+        <span class="tag tag-social">Local</span>
+      </div>
+      <h3>Norwalk Racers</h3>
+      <p>Local triathlon group in the Norwalk area. South metro multisport community for athletes who train on the same trail network this directory is built around.</p>
+      <span class="location">Norwalk, IA</span>
+      <a href="https://www.trifind.com/Clubs/FindAClub?state=IA" target="_blank" rel="noopener">trifind.com →</a>
+    </div>
+
+    <div class="card" data-tags="multi run bike swim strength">
+      <div class="card-tags">
+        <span class="tag tag-multi">Tri</span>
+        <span class="tag tag-strength">Performance</span>
+      </div>
+      <h3>Peak 3D Tri Club</h3>
+      <p>Performance-oriented triathlon training based in the Des Moines area. Structured programming across all three disciplines for athletes targeting goal races and time improvements.</p>
+      <span class="location">Des Moines, IA</span>
+      <a href="https://www.trifind.com/Clubs/FindAClub?state=IA" target="_blank" rel="noopener">trifind.com →</a>
+    </div>
+
+  </div>
+
+  <!-- ── STRENGTH & WELLNESS ── -->
+  <div class="section-head">
+    <h2>Strength &amp; Wellness</h2>
+    <div class="rule"></div>
+  </div>
+  <p style="font-size:0.82rem; color:var(--stone); margin-bottom:1.25rem; margin-top:-0.75rem;">Clinical partners, performance development, and recovery resources along the corridor.</p>
+  <div class="cards" id="wellness-grid">
+
+    <div class="card" data-tags="wellness run multi">
+      <div class="card-tags">
+        <span class="tag tag-wellness">Clinical</span>
+        <span class="tag tag-run">Run</span>
+      </div>
+      <h3>Imara Performance PT</h3>
+      <p>Running performance, gait analysis, and pelvic health. Founded by Danna Herrick — 3x Olympic Trials marathoner and Ironman World Championships finisher. Clinical gait analysis: 60 min, BCBS covered or $150 cash pay. Requires initial eval. This is not the same as a shoe fitting — it's a plan of care.</p>
+      <span class="location">8800 SE County Line Rd · Cumming / Norwalk</span>
+      <a href="https://imarapt.com/" target="_blank" rel="noopener">imarapt.com →</a>
+    </div>
+
+    <div class="card" data-tags="strength run youth">
+      <div class="card-tags">
+        <span class="tag tag-strength">Strength</span>
+        <span class="tag tag-run">Run</span>
+        <span class="tag tag-youth">Youth</span>
+      </div>
+      <h3>Speed &amp; Performance Academy (SPA)</h3>
+      <p>Youth athlete performance development — speed, agility, and strength. Race director for RuNORwalk. Partners with Imara PT on the Norwalk Run Club. The north anchor of the Great Western Corridor.</p>
+      <span class="location">8800 SE County Line Rd · Norwalk</span>
+      <a href="https://speedandperformanceacademy.com" target="_blank" rel="noopener">speedandperformanceacademy.com →</a>
+    </div>
+
+    <div class="card" data-tags="strength multi run">
+      <div class="card-tags">
+        <span class="tag tag-strength">Strength</span>
+        <span class="tag tag-multi">Multi</span>
+      </div>
+      <h3>D1 Training Des Moines</h3>
+      <p>Specialized athlete development across speed, strength, and multi-sport conditioning. Science-based programming for serious athletes at all levels who want to train like one.</p>
+      <span class="location">Des Moines metro</span>
+      <a href="https://d1training.com/facility/des-moines/" target="_blank" rel="noopener">d1training.com →</a>
+    </div>
+
+    <div class="card" data-tags="strength wellness">
+      <div class="card-tags">
+        <span class="tag tag-strength">Strength</span>
+        <span class="tag tag-wellness">Wellness</span>
+      </div>
+      <h3>LIFT DSM</h3>
+      <p>High-quality performance gym in Des Moines. Strength and conditioning focused, serious about programming. For runners who need more than a treadmill and a squat rack.</p>
+      <span class="location">Des Moines, IA</span>
+      <a href="https://lift-dsm.com/" target="_blank" rel="noopener">lift-dsm.com →</a>
+    </div>
+
+    <div class="card" data-tags="wellness strength">
+      <div class="card-tags">
+        <span class="tag tag-wellness">Recovery</span>
+        <span class="tag tag-strength">Strength</span>
+      </div>
+      <h3>HOTWORX Norwalk</h3>
+      <p>Infrared sauna-based yoga, pilates, and barre in Norwalk. Endurance athletes use it for active recovery and cross-training. Accessible, low-barrier, good complement to heavy mileage weeks.</p>
+      <span class="location">Norwalk, IA</span>
+      <a href="https://www.hotworx.net/studio/norwalksunsetdr" target="_blank" rel="noopener">hotworx.net →</a>
+    </div>
+
+    <div class="card" data-tags="wellness strength">
+      <div class="card-tags">
+        <span class="tag tag-wellness">Wellness</span>
+        <span class="tag tag-strength">Strength</span>
+      </div>
+      <h3>Indianola Wellness Campus</h3>
+      <p>Community wellness facility in Indianola. Indoor running track, strength equipment, programming across all ages. Good option for south metro athletes who train further out.</p>
+      <span class="location">Indianola, IA</span>
+      <a href="https://www.indianolaiowa.gov/1143/Wellness-Campus" target="_blank" rel="noopener">indianolaiowa.gov →</a>
+    </div>
+
+    <div class="card" data-tags="wellness strength">
+      <div class="card-tags">
+        <span class="tag tag-wellness">Wellness</span>
+        <span class="tag tag-strength">Strength</span>
+      </div>
+      <h3>YMCA of Greater Des Moines</h3>
+      <p>Multi-site fitness hub covering strength, swimming, and group programming across the metro. Accessible and well-resourced. The baseline infrastructure for athletes across all disciplines.</p>
+      <span class="location">Des Moines metro · Multiple locations</span>
+      <a href="https://www.dmymca.org/about-y" target="_blank" rel="noopener">dmymca.org →</a>
+    </div>
+
+    <div class="card" data-tags="wellness strength">
+      <div class="card-tags">
+        <span class="tag tag-wellness">Wellness</span>
+        <span class="tag tag-strength">Strength</span>
+      </div>
+      <h3>Anytime Fitness — Norwalk</h3>
+      <p>24/7 access gym in Norwalk. When the weather is wrong and the trail can wait, this is the closest strength option to the G14 trailhead. Basic, reliable, close.</p>
+      <span class="location">Norwalk, IA</span>
+      <a href="https://www.anytimefitness.com/locations/norwalk-iowa-140" target="_blank" rel="noopener">anytimefitness.com →</a>
+    </div>
+
+  </div>
+
+  <!-- ── SOCIAL & COMMUNITY ── -->
+  <div class="section-head">
+    <h2>Social &amp; Community</h2>
+    <div class="rule"></div>
+  </div>
+  <p style="font-size:0.82rem; color:var(--stone); margin-bottom:1.25rem; margin-top:-0.75rem;">Lower barrier to entry. Higher emphasis on showing up. These are the groups that keep people in the sport long-term.</p>
+  <div class="cards" id="social-grid">
+
+    <div class="card" data-tags="social strength">
+      <div class="card-tags">
+        <span class="tag tag-social">Social</span>
+        <span class="tag tag-strength">Strength</span>
+      </div>
+      <h3>F3 Des Moines</h3>
+      <p>Free, peer-led outdoor workouts for men. Fitness, Fellowship, and Faith. Locations at Water Works Park and Waukee. Ends every workout with a Circle of Trust. Community-building through movement — a model worth knowing.</p>
+      <span class="location">Des Moines metro · Multiple locations</span>
+      <a href="https://f3dsm.com/" target="_blank" rel="noopener">f3dsm.com →</a>
+    </div>
+
+    <div class="card" data-tags="social wellness">
+      <div class="card-tags">
+        <span class="tag tag-social">Social</span>
+        <span class="tag tag-wellness">Wellness</span>
+      </div>
+      <h3>Norwalk Yoga in the Park</h3>
+      <p>Accessible outdoor yoga through Norwalk Parks and Recreation. Low commitment, community-facing, open to all fitness levels. A good first step for people who aren't ready for a run club but need to move.</p>
+      <span class="location">Norwalk, IA · Seasonal</span>
+      <a href="https://norwalk-iowa-gov.hosted.civiclive.com/government/departments/parks___recreation/recreational_programs/fitness" target="_blank" rel="noopener">norwalk.iowa.gov →</a>
+    </div>
+
+    <div class="card" data-tags="social run">
+      <div class="card-tags">
+        <span class="tag tag-social">Social</span>
+        <span class="tag tag-run">Run</span>
+      </div>
+      <h3>Fleet Feet Third Thursday</h3>
+      <p>Monthly social run + shoe demo night out of Fleet Feet Des Moines. Low-key, gear-forward, easy entry point for runners who want community without the commitment of a regular club.</p>
+      <span class="location">Des Moines, IA · Monthly</span>
+      <a href="https://www.fleetfeet.com/s/desmoines/runclub" target="_blank" rel="noopener">fleetfeet.com/desmoines →</a>
+    </div>
+
+    <div class="card" data-tags="social bike">
+      <div class="card-tags">
+        <span class="tag tag-social">Social</span>
+        <span class="tag tag-bike">Bike</span>
+      </div>
+      <h3>#coffeeoutsidedsm</h3>
+      <p>Casual bike + coffee culture. No pace requirement, no performance pressure. Just people who ride and value the part that comes after. Via Bike Iowa's social calendar.</p>
+      <span class="location">Des Moines metro</span>
+      <a href="https://www.bikeiowa.com/Events/" target="_blank" rel="noopener">bikeiowa.com →</a>
+    </div>
+
+    <div class="card" data-tags="social bike">
+      <div class="card-tags">
+        <span class="tag tag-social">Social</span>
+        <span class="tag tag-bike">Bike</span>
+      </div>
+      <h3>Chain &amp; Spoke Pint Night</h3>
+      <p>No-drop bike ride with a pint at the end. The least intimidating way to ride with strangers in Des Moines. Social-first, speed-last.</p>
+      <span class="location">Des Moines, IA</span>
+      <a href="https://www.eventbrite.com/e/no-drop-bike-ride-and-pint-night-social-tickets-1989276032162" target="_blank" rel="noopener">Eventbrite →</a>
+    </div>
+
+    <div class="card" data-tags="social wellness">
+      <div class="card-tags">
+        <span class="tag tag-social">Social</span>
+        <span class="tag tag-wellness">50+</span>
+      </div>
+      <h3>Indianola Activity Center</h3>
+      <p>Community wellness programming for adults 50+. Walking trails, fitness classes, and social connection. Fitness doesn't have a pace requirement and neither does community.</p>
+      <span class="location">Indianola, IA</span>
+      <a href="https://cityofindianola.com/departments/parksrec/seniorcenter.asp" target="_blank" rel="noopener">cityofindianola.com →</a>
+    </div>
+
+  </div>
+
+  <!-- ── RACE SERIES ── -->
+  <div class="section-head" style="margin-top:3rem;">
+    <h2>Race Series &amp; Local Events</h2>
+    <div class="rule"></div>
+  </div>
+  <p style="font-size:0.82rem; color:var(--stone); margin-bottom:1.25rem;">Events to sign up for, not groups to join. These are the goals people train toward.</p>
+  <div class="races-grid">
+
+    <div class="race-card">
+      <h3>RuNORwalk</h3>
+      <p>Annual 5K, 10K, and kids fun run in Norwalk. Proceeds to Norwalk Food Pantry and Library. Race directed by Josh Maxwell / Speed &amp; Performance Academy. The closest start line to the G14 trailhead.</p>
+      <a href="https://www.norwalkchamber.org/runorwalk" target="_blank" rel="noopener">norwalkchamber.org →</a>
+    </div>
+
+    <div class="race-card">
+      <h3>TrueTime Racing</h3>
+      <p>Local race series across south metro and Central Iowa. Road, trail, and multi-sport events throughout the season. Most of the smaller stuff in this region runs through them.</p>
+      <a href="https://www.truetimeracing.com" target="_blank" rel="noopener">truetimeracing.com →</a>
+    </div>
+
+    <div class="race-card">
+      <h3>Capital Striders Race Calendar</h3>
+      <p>Loop the Lake 8K. Sycamore 8 Trail Run. The established regional race calendar that's been running since the mid-80s. Sign up. Show up. These are the benchmarks.</p>
+      <a href="https://www.capitalstriders.org/" target="_blank" rel="noopener">capitalstriders.org →</a>
+    </div>
+
+    <div class="race-card">
+      <h3>The Neighborhood Dash — Indianola</h3>
+      <p>Local community race in Indianola. Supports youth and humanitarian causes. Good one for families and new runners who want a low-pressure first race day.</p>
+      <a href="https://runsignup.com/Race/IA/Indianola/TheNeighborhoodDash" target="_blank" rel="noopener">runsignup.com →</a>
+    </div>
+
+    <div class="race-card">
+      <h3>Iowa Open Water Championships</h3>
+      <p>Competitive open-water swimming at Easter Lake. The seasonal swim racing outlet for multisport athletes who've moved past the pool.</p>
+      <a href="https://www.usms.org" target="_blank" rel="noopener">usms.org →</a>
+    </div>
+
+    <div class="race-card">
+      <h3>USA Triathlon Nationals 2027–2028</h3>
+      <p>Des Moines is hosting the national championship in 2027 and 2028. The Great Western Corridor is training ground. If you're in the south metro tri community, this is the timeline that matters.</p>
+      <a href="https://www.usatriathlon.org/" target="_blank" rel="noopener">usatriathlon.org →</a>
+    </div>
+
+  </div>
+
+  <!-- Footer CTA -->
+  <div class="cta">
+    <p>This is community infrastructure. The more complete it is, the better it works for everyone — including you. Know a group that should be on this list?</p>
+    <a href="mailto:gravelcrossing@gmail.com">Suggest a group</a>
+  </div>
+
+</main>
+
+<script>
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const allCards   = document.querySelectorAll('.card');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const filter = btn.dataset.filter;
+
+      allCards.forEach(card => {
+        if (filter === 'all') {
+          card.classList.remove('hidden');
+        } else {
+          const tags = card.dataset.tags || '';
+          const match = tags.split(' ').includes(filter);
+          card.classList.toggle('hidden', !match);
+        }
+      });
+
+      // Show/hide section heads based on visible cards
+      document.querySelectorAll('.section-head').forEach(head => {
+        const next = head.nextElementSibling;
+        if (!next) return;
+        // Skip sections that aren't card grids (race section, subtitle paras)
+        if (next.classList.contains('races-grid') || next.tagName === 'P') return;
+        const visible = next.querySelectorAll('.card:not(.hidden)');
+        head.style.display = visible.length === 0 ? 'none' : 'flex';
+        // Also hide the subtitle paragraph if present
+        if (next.tagName === 'P' && visible.length === 0) next.style.display = 'none';
+      });
+    });
+  });
+</script>
+
+<script>
+/* ── Events: JSON-driven upcoming events section ──────────────────────────
+   Data file: /assets/data/events.json  (local dev: events.json)
+   Falls back to embedded seed data if fetch fails.
+   To update events: edit events.json. No code changes needed.
+   Make.com can POST to a Cloudflare Worker that writes to this file.
+────────────────────────────────────────────────────────────────────────── */
+
+const EVENTS_URL = '/assets/data/events.json';
+const EVENTS_FALLBACK_URL = 'events.json'; // local dev fallback
+
+const DAY   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function formatEventDate(dateStr, timeStr) {
+  // dateStr: "2026-06-21", timeStr: "7:00 AM"
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return `${DAY[dt.getDay()]} · ${MONTH[m-1]} ${d} · ${timeStr}`;
+}
+
+function isUpcoming(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const eventDate = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return eventDate >= today;
+}
+
+function renderEvents(data) {
+  const grid = document.getElementById('events-grid');
+  const tag  = document.getElementById('events-updated-tag');
+
+  if (data.updated) {
+    tag.textContent = `updated ${data.updated}`;
+  }
+
+  const upcoming = (data.events || [])
+    .filter(e => isUpcoming(e.date))
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, 8); // max 8 cards
+
+  if (upcoming.length === 0) {
+    grid.innerHTML = '<p class="events-empty">No upcoming events listed. Check back soon.</p>';
+    return;
+  }
+
+  grid.innerHTML = upcoming.map(e => {
+    const isGC   = e.host === 'Gravel Crossing';
+    const cardCls = isGC ? 'event-card gc-event' : 'event-card';
+    const dateLabel = formatEventDate(e.date, e.time);
+
+    const distPace = [e.distance, e.pace].filter(Boolean).join(' · ');
+    const detailLines = [
+      e.location ? `📍 ${e.location}, ${e.city}` : null,
+      distPace || null,
+      e.details || null,
+    ].filter(Boolean);
+
+    const linkHTML = e.link
+      ? `<a class="event-link" href="${e.link}" target="_blank" rel="noopener">Details →</a>`
+      : (isGC ? `<a class="event-link" href="/">gravelcrossing.com →</a>` : '');
+
+    return `
+      <div class="${cardCls}">
+        <div class="event-date-tag">${dateLabel}</div>
+        <div class="event-title">${e.title}</div>
+        <div class="event-detail">${detailLines.join('<br>')}</div>
+        <div class="event-host">${e.host}</div>
+        ${linkHTML}
+      </div>`;
+  }).join('');
+}
+
+async function loadEvents() {
+  const grid = document.getElementById('events-grid');
+  try {
+    let res = await fetch(EVENTS_URL);
+    if (!res.ok) throw new Error('primary fetch failed');
+    const data = await res.json();
+    renderEvents(data);
+  } catch (_) {
+    // Try local dev fallback path
+    try {
+      let res = await fetch(EVENTS_FALLBACK_URL);
+      if (!res.ok) throw new Error('fallback fetch failed');
+      const data = await res.json();
+      renderEvents(data);
+    } catch (_2) {
+      grid.innerHTML = '<p class="events-empty">Events unavailable. Check <a href="https://instagram.com/gravelcrossing" style="color:var(--clay)">@gravelcrossing</a> for the latest.</p>';
+    }
+  }
+}
+
+loadEvents();
+</script>
+</body>
+</html>

@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GC Events Editor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --charcoal: #2D2926;
+      --clay:     #C25A2C;
+      --bone:     #E8DFD3;
+      --gravel:   #B8AFA6;
+      --trail:    #9A8E84;
+      --bg:       #F4EFE9;
+      --white:    #ffffff;
+      --danger:   #c0392b;
+      --success:  #27ae60;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--charcoal);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--charcoal);
+      border-bottom: 3px solid var(--clay);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .header-title {
+      font-family: 'Roboto Slab', serif;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: var(--bone);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .header-title span { color: var(--clay); }
+    .header-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--trail);
+      letter-spacing: 0.08em;
+      margin-top: 0.2rem;
+    }
+    .header-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      padding: 0.6rem 1.1rem;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-clay    { background: var(--clay); color: var(--bone); }
+    .btn-clay:hover { background: #a04a22; }
+    .btn-dark    { background: var(--charcoal); color: var(--bone); border: 1px solid rgba(255,255,255,0.15); }
+    .btn-dark:hover { background: #1a1715; }
+    .btn-outline { background: transparent; color: var(--charcoal); border: 1.5px solid var(--gravel); }
+    .btn-outline:hover { border-color: var(--clay); color: var(--clay); }
+    .btn-danger  { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #a93226; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.62rem; }
+
+    /* ── Layout ── */
+    .app {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .event-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--trail);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Event list ── */
+    .event-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .event-row {
+      background: var(--white);
+      border: 1.5px solid #e0d8d0;
+      border-left: 5px solid var(--gravel);
+      padding: 1rem 1.1rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem 1rem;
+      align-items: start;
+      transition: border-left-color 0.15s;
+    }
+    .event-row.is-gc { border-left-color: var(--clay); }
+    .event-row.is-past { opacity: 0.45; }
+
+    .event-row-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--charcoal);
+      margin-bottom: 0.25rem;
+    }
+    .event-row-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--trail);
+      letter-spacing: 0.05em;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.2rem 1rem;
+    }
+    .event-row-meta .gc-badge {
+      background: var(--clay);
+      color: var(--bone);
+      font-size: 0.58rem;
+      padding: 0.1rem 0.4rem;
+      letter-spacing: 0.08em;
+    }
+    .event-row-meta .past-badge {
+      background: var(--gravel);
+      color: var(--white);
+      font-size: 0.58rem;
+      padding: 0.1rem 0.4rem;
+    }
+    .event-row-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
+      padding-top: 0.1rem;
+    }
+
+    /* ── Modal overlay ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 200;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+      overflow-y: auto;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--white);
+      width: 100%;
+      max-width: 620px;
+      border-top: 4px solid var(--clay);
+      padding: 2rem;
+      position: relative;
+    }
+    .modal-title {
+      font-family: 'Roboto Slab', serif;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: var(--charcoal);
+      letter-spacing: 0.04em;
+      margin-bottom: 1.5rem;
+    }
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: var(--trail);
+      line-height: 1;
+      padding: 0.25rem;
+    }
+    .modal-close:hover { color: var(--charcoal); }
+
+    /* ── Form ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--trail);
+    }
+    label .required { color: var(--clay); }
+    input[type=text],
+    input[type=date],
+    input[type=url],
+    select,
+    textarea {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--charcoal);
+      background: var(--bg);
+      border: 1.5px solid #d5cdc4;
+      padding: 0.6rem 0.8rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s;
+      border-radius: 0;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--clay); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .toggle-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+    }
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--gravel);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: white;
+      transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--clay); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+    .toggle-label {
+      font-size: 0.85rem;
+      color: var(--charcoal);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #e8e0d8;
+    }
+
+    /* ── Export panel ── */
+    .export-panel {
+      background: var(--charcoal);
+      padding: 1.5rem;
+      border-left: 4px solid var(--clay);
+    }
+    .export-panel h3 {
+      font-family: 'Roboto Slab', serif;
+      font-weight: 900;
+      font-size: 0.9rem;
+      color: var(--bone);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .export-panel p {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--trail);
+      letter-spacing: 0.06em;
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+    .export-panel .export-path {
+      color: var(--clay);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 1.5rem;
+      background: var(--charcoal);
+      color: var(--bone);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      padding: 0.75rem 1.25rem;
+      border-left: 4px solid var(--clay);
+      z-index: 999;
+      display: none;
+    }
+    .toast.show { display: block; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--trail);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      border: 1.5px dashed var(--gravel);
+    }
+
+    @media (max-width: 580px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
+      header { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div>
+    <div class="header-title">Gravel Crossing · <span>Events Editor</span></div>
+    <div class="header-sub">Edit events → Export JSON → Replace events.json on the site</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" id="btn-load-file" onclick="document.getElementById('file-input').click()">
+      📂 Load events.json
+    </button>
+    <input type="file" id="file-input" accept=".json" style="display:none" />
+    <button class="btn btn-clay" onclick="openAddModal()">+ Add Event</button>
+  </div>
+</header>
+
+<!-- ── App ── -->
+<div class="app">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span class="event-count" id="event-count"></span>
+      <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+        <input type="checkbox" id="show-past" style="accent-color:var(--clay);width:14px;height:14px;" />
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.06em;color:var(--trail);">Show past events</span>
+      </label>
+    </div>
+    <button class="btn btn-clay" onclick="exportJSON()">⬇ Download events.json</button>
+  </div>
+
+  <!-- Event list -->
+  <div class="event-list" id="event-list">
+    <div class="empty-state">No events loaded. Click "+ Add Event" or load an existing events.json file.</div>
+  </div>
+
+  <!-- Export instructions -->
+  <div class="export-panel">
+    <h3>How to update the live site</h3>
+    <p>
+      1. Click <strong style="color:var(--bone)">⬇ Download events.json</strong> above<br>
+      2. Find the downloaded file in your Downloads folder<br>
+      3. Copy it to your site repo at:
+      <span class="export-path">assets/data/events.json</span><br>
+      4. Open GitHub Desktop → you'll see the change → click <strong style="color:var(--bone)">Commit</strong> → <strong style="color:var(--bone)">Push</strong><br>
+      5. Cloudflare Pages deploys automatically. Done.
+    </p>
+  </div>
+
+</div>
+
+<!-- ── Add / Edit Modal ── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalIfOverlay(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modal-title">Add Event</div>
+
+    <form id="event-form" onsubmit="saveEvent(event)">
+      <input type="hidden" id="edit-index" value="-1" />
+
+      <div class="form-grid">
+
+        <!-- Title -->
+        <div class="form-group full">
+          <label>Event Title <span class="required">*</span></label>
+          <input type="text" id="f-title" placeholder="Saturday Morning Run" required />
+        </div>
+
+        <!-- Date + Time -->
+        <div class="form-group">
+          <label>Date <span class="required">*</span></label>
+          <input type="date" id="f-date" required />
+        </div>
+        <div class="form-group">
+          <label>Start Time <span class="required">*</span></label>
+          <input type="text" id="f-time" placeholder="7:00 AM" required />
+        </div>
+
+        <!-- Type + Host -->
+        <div class="form-group">
+          <label>Event Type</label>
+          <select id="f-type">
+            <option value="run">Run</option>
+            <option value="race">Race</option>
+            <option value="bike">Bike</option>
+            <option value="tri">Triathlon</option>
+            <option value="social">Social</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Host / Organizer</label>
+          <input type="text" id="f-host" placeholder="Gravel Crossing" />
+        </div>
+
+        <!-- Location -->
+        <div class="form-group">
+          <label>Location / Trailhead</label>
+          <input type="text" id="f-location" placeholder="G14 & 25th Ave Trailhead" />
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" id="f-city" placeholder="Cumming, IA" />
+        </div>
+
+        <!-- Distance + Pace -->
+        <div class="form-group">
+          <label>Distance</label>
+          <input type="text" id="f-distance" placeholder="4–6 mi" />
+        </div>
+        <div class="form-group">
+          <label>Pace / Effort</label>
+          <input type="text" id="f-pace" placeholder="Easy" />
+        </div>
+
+        <!-- Details -->
+        <div class="form-group full">
+          <label>Details / Notes</label>
+          <textarea id="f-details" placeholder="Bring water. All paces welcome. We start and end together."></textarea>
+        </div>
+
+        <!-- Link -->
+        <div class="form-group full">
+          <label>Registration / Info Link (optional)</label>
+          <input type="url" id="f-link" placeholder="https://runsignup.com/..." />
+        </div>
+
+        <!-- Toggles -->
+        <div class="form-group full" style="display:flex;gap:2rem;flex-wrap:wrap;">
+          <div class="toggle-group">
+            <label class="toggle">
+              <input type="checkbox" id="f-featured" />
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">Featured (shows prominently on site)</span>
+          </div>
+          <div class="toggle-group">
+            <label class="toggle">
+              <input type="checkbox" id="f-recurring" />
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label">Recurring weekly run</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn btn-clay">Save Event</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── State ── */
+let events = [];
+let showPast = false;
+
+/* ── Seed with current events ── */
+const SEED_EVENTS = [
+  { id:"gc-sat-0621", date:"2026-06-21", time:"7:00 AM", title:"Saturday Morning Run", type:"run", host:"Gravel Crossing", location:"G14 & 25th Ave Trailhead", city:"Cumming, IA", distance:"4–6 mi", pace:"Easy", details:"Dirt loop south toward Norwalk. Bring water. All paces welcome.", link:null, featured:true, recurring:true },
+  { id:"gc-sat-0628", date:"2026-06-28", time:"7:00 AM", title:"Saturday Morning Run", type:"run", host:"Gravel Crossing", location:"G14 & 25th Ave Trailhead", city:"Cumming, IA", distance:"4–6 mi", pace:"Easy", details:"Route TBD based on conditions. Check social night before.", link:null, featured:false, recurring:true },
+  { id:"gc-sat-0705", date:"2026-07-05", time:"6:30 AM", title:"Saturday Morning Run — Early Start", type:"run", host:"Gravel Crossing", location:"G14 & 25th Ave Trailhead", city:"Cumming, IA", distance:"4–8 mi", pace:"Easy", details:"Early start for the heat. Post-run coffee at the trailhead.", link:null, featured:false, recurring:false },
+  { id:"gc-sat-0712", date:"2026-07-12", time:"7:00 AM", title:"Saturday Morning Run", type:"run", host:"Gravel Crossing", location:"G14 & 25th Ave Trailhead", city:"Cumming, IA", distance:"4–6 mi", pace:"Easy", details:"Standard Saturday. Route posted Friday evening.", link:null, featured:false, recurring:true },
+  { id:"gc-sat-0719", date:"2026-07-19", time:"7:00 AM", title:"Saturday Morning Run", type:"run", host:"Gravel Crossing", location:"G14 & 25th Ave Trailhead", city:"Cumming, IA", distance:"4–6 mi", pace:"Easy", details:null, link:null, featured:false, recurring:true },
+  { id:"cstriders-firecracker-0704", date:"2026-07-04", time:"7:30 AM", title:"Firecracker 5K/10K", type:"race", host:"Capital Striders", location:"Water Works Park", city:"Des Moines, IA", distance:"5K / 10K", pace:null, details:"Annual Independence Day race. Road. All levels.", link:"https://capitalstriders.com", featured:false, recurring:false },
+  { id:"runorwalk-summer-0802", date:"2026-08-02", time:"8:00 AM", title:"RuNORwalk Summer 5K", type:"race", host:"TrueTime Racing", location:"Norwalk City Park", city:"Des Moines, IA", distance:"5K", pace:null, details:"Road race through Norwalk. Chip-timed. Age group awards.", link:"https://runsignup.com", featured:false, recurring:false }
+];
+
+events = SEED_EVENTS.map(e => ({...e}));
+
+/* ── Utilities ── */
+function today() {
+  const d = new Date(); d.setHours(0,0,0,0); return d;
+}
+function isPast(dateStr) {
+  const [y,m,d] = dateStr.split('-').map(Number);
+  return new Date(y,m-1,d) < today();
+}
+function formatDisplay(dateStr, timeStr) {
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y,m-1,d);
+  const days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${days[dt.getDay()]}  ${months[m-1]} ${d}, ${y}  ·  ${timeStr}`;
+}
+function genId(title, date) {
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'').slice(0,20);
+  const ds   = date.replace(/-/g,'').slice(4); // MMDD
+  return `${slug}-${ds}`;
+}
+function showToast(msg, dur = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+/* ── Render list ── */
+function render() {
+  const list = document.getElementById('event-list');
+  const sorted = [...events].sort((a,b) => a.date.localeCompare(b.date));
+  const visible = showPast ? sorted : sorted.filter(e => !isPast(e.date));
+
+  document.getElementById('event-count').textContent =
+    `${visible.length} event${visible.length !== 1 ? 's' : ''} shown · ${events.length} total`;
+
+  if (visible.length === 0) {
+    list.innerHTML = '<div class="empty-state">No upcoming events. Toggle "Show past events" or add a new one.</div>';
+    return;
+  }
+
+  list.innerHTML = visible.map((e, visIdx) => {
+    const realIdx = events.indexOf(e);
+    const isGC   = e.host === 'Gravel Crossing';
+    const past   = isPast(e.date);
+    const gcBadge   = isGC   ? '<span class="gc-badge">GC</span>' : '';
+    const pastBadge = past   ? '<span class="past-badge">PAST</span>' : '';
+    const featStar  = e.featured ? '⭐ ' : '';
+
+    const meta = [
+      formatDisplay(e.date, e.time),
+      e.location ? `${e.location}, ${e.city}` : e.city,
+      [e.distance, e.pace].filter(Boolean).join(' · ') || null,
+    ].filter(Boolean).join('  ·  ');
+
+    return `
+      <div class="event-row ${isGC ? 'is-gc' : ''} ${past ? 'is-past' : ''}">
+        <div>
+          <div class="event-row-title">${featStar}${e.title}</div>
+          <div class="event-row-meta">
+            ${gcBadge}${pastBadge}
+            <span>${meta}</span>
+            ${e.host && !isGC ? `<span>by ${e.host}</span>` : ''}
+          </div>
+        </div>
+        <div class="event-row-actions">
+          <button class="btn btn-outline btn-sm" onclick="openEditModal(${realIdx})">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteEvent(${realIdx})">Delete</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ── Modal ── */
+function openAddModal() {
+  document.getElementById('modal-title').textContent = 'Add Event';
+  document.getElementById('edit-index').value = -1;
+  document.getElementById('event-form').reset();
+  // Default host and city
+  document.getElementById('f-host').value     = 'Gravel Crossing';
+  document.getElementById('f-city').value     = 'Cumming, IA';
+  document.getElementById('f-location').value = 'G14 & 25th Ave Trailhead';
+  document.getElementById('f-pace').value     = 'Easy';
+  document.getElementById('f-time').value     = '7:00 AM';
+  // Default date to next Saturday
+  const d = new Date();
+  d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7));
+  document.getElementById('f-date').value = d.toISOString().split('T')[0];
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openEditModal(idx) {
+  const e = events[idx];
+  document.getElementById('modal-title').textContent = 'Edit Event';
+  document.getElementById('edit-index').value = idx;
+  document.getElementById('f-title').value    = e.title    || '';
+  document.getElementById('f-date').value     = e.date     || '';
+  document.getElementById('f-time').value     = e.time     || '';
+  document.getElementById('f-type').value     = e.type     || 'run';
+  document.getElementById('f-host').value     = e.host     || '';
+  document.getElementById('f-location').value = e.location || '';
+  document.getElementById('f-city').value     = e.city     || '';
+  document.getElementById('f-distance').value = e.distance || '';
+  document.getElementById('f-pace').value     = e.pace     || '';
+  document.getElementById('f-details').value  = e.details  || '';
+  document.getElementById('f-link').value     = e.link     || '';
+  document.getElementById('f-featured').checked  = !!e.featured;
+  document.getElementById('f-recurring').checked = !!e.recurring;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function closeModalIfOverlay(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+/* ── Save event ── */
+function saveEvent(e) {
+  e.preventDefault();
+  const idx   = parseInt(document.getElementById('edit-index').value);
+  const title = document.getElementById('f-title').value.trim();
+  const date  = document.getElementById('f-date').value;
+
+  const host = document.getElementById('f-host').value.trim();
+  const tags = ['run'];
+  if (host === 'Gravel Crossing') tags.push('gc');
+
+  const entry = {
+    id:        idx >= 0 ? events[idx].id : genId(title, date),
+    date,
+    time:      document.getElementById('f-time').value.trim(),
+    title,
+    type:      document.getElementById('f-type').value,
+    host,
+    location:  document.getElementById('f-location').value.trim() || null,
+    city:      document.getElementById('f-city').value.trim()     || null,
+    distance:  document.getElementById('f-distance').value.trim() || null,
+    pace:      document.getElementById('f-pace').value.trim()     || null,
+    details:   document.getElementById('f-details').value.trim()  || null,
+    link:      document.getElementById('f-link').value.trim()     || null,
+    featured:  document.getElementById('f-featured').checked,
+    recurring: document.getElementById('f-recurring').checked,
+    tags,
+  };
+
+  if (idx >= 0) {
+    events[idx] = entry;
+    showToast('Event updated ✓');
+  } else {
+    events.push(entry);
+    showToast('Event added ✓');
+  }
+
+  closeModal();
+  render();
+}
+
+/* ── Delete ── */
+function deleteEvent(idx) {
+  const name = events[idx].title;
+  if (!confirm(`Delete "${name}"?`)) return;
+  events.splice(idx, 1);
+  showToast('Event deleted');
+  render();
+}
+
+/* ── Load JSON file ── */
+document.getElementById('file-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.events) throw new Error('No events array found');
+      events = data.events;
+      showToast(`Loaded ${events.length} events ✓`);
+      render();
+    } catch(err) {
+      alert('Could not read that file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  this.value = ''; // reset so same file can be reloaded
+});
+
+/* ── Export JSON ── */
+function exportJSON() {
+  const sorted = [...events].sort((a,b) => a.date.localeCompare(b.date));
+  const data = {
+    _comment: "Update this file to add/edit/remove events. Deployed at /assets/data/events.json on the live site.",
+    updated: new Date().toISOString().split('T')[0],
+    events: sorted
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'events.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Downloaded events.json ✓');
+}
+
+/* ── Toggle past ── */
+document.getElementById('show-past').addEventListener('change', function() {
+  showPast = this.checked;
+  render();
+});
+
+/* ── Init ── */
+render();
+</script>
+</body>
+</html>
